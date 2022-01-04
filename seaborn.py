@@ -23,6 +23,48 @@ sns.catplot(x="day", y="total_bill", kind="violin", data=b)
 sns.catplot(x="day", y="total_bill", kind="boxen", data=b)
 
 
+from scipy import stats
+#For univariate distributions
+c=np.random.normal(loc=5, size=100, scale=2)
+sns.distplot(c)
+sns.displot(c)
+
+#Bivariate distributions
+
+
+
+#Multiple Graphs
+a=sns.load_dataset("iris")
+b=sns.FacetGrid(a, col="species")
+b.map(plt.hist, "sepal_length")
+
+#Pair Grid
+a=sns.load_dataset("flights")
+b=sns.PairGrid(a)
+b.map(plt.scatter)
+
+
+#Adding some Aesthetics
+sns.set(style="dark")
+a=sns.load_dataset("flights")
+b=sns.PairGrid(a)
+b.map(plt.scatter)
+
+#for boxplot
+sns.set(style="white", color_codes=True)
+a=sns.load_dataset("tips")
+sns.boxplot(x="day", y="total_bill", data=a)
+
+# boxplot
+sns.set(style="white", color_codes=True)
+a=sns.load_dataset("tips")
+sns.boxplot(x="day", y="total_bill", data=a)
+sns.despine(offset=10, trim=True)
+
+#colors
+c=sns.color_palette()
+sns.palplot(c)
+
 
 
 
