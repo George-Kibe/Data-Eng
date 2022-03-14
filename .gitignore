@@ -1,1 +1,3 @@
 csvSamples/
+*.zip
+.ipynb_checkpoints
