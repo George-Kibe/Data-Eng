@@ -1,0 +1,61 @@
+#To check if AWS CLI is successfully installed and configured
+aws --version
+
+#If you are stuck anywhere you can refer to the documentation using
+aws help
+#To use anything in our AWS Cloud, First, we need to log in
+aws configure
+
+#To show all the EC2 instances available
+aws ec2 describe-instances
+#other ec2 commands
+aws ec2 describe-tags
+aws ec2 describe-subnets
+aws ec2 describe-vpcs
+aws ec2 describe-hosts
+aws ec2 describe-volumes
+aws ec2 describe-key-pairs
+aws ec2 describe-security-groups
+aws ec2 describe-regions
+
+#creating a key-pair
+aws ec2 create-key-pair — key-name arthkey — query “KeyMaterial” > arthkey.pem
+
+#Creating a Security Group allowing both SSH and Http
+aws ec2 create-security-group --group-name MySG --description "allow http and ssh" --vpc-id vpc-02f3ee6a
+#Allowing both ssh and HTTP
+aws ec2 authorize-security-group-ingress --group-id sg-02acd13d993724f96 --protocol tcp --port 22 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id sg-02acd13d993724f96 --protocol tcp --port 80 --cidr 0.0.0.0/0
+
+#check
+aws ec2  describe-security-groups --group-id sg-02acd13d993724f96
+
+# Launching the instance with the key pair and security group we made
+aws ec2 run-instances --image-id ami-03cfb5e1fb4fac428 --count 1 --instance-type t2.micro --key-name arthkey --security-group-ids sg-02acd13d993724f96 --tag-specifications  ResourceType=instance,Tags=[{Key=Name,Value=myos}]
+aws ec2 create-tags --resources i-0a1439101877433db --tags Key=env,Value=testing
+
+#Creating EBS storage/volume
+aws ec2 create-volume --volume-type gp2 --size 1 --availability-zone ap-south-1b --tag-specifications  ResourceType=volume,Tags=[{Key=Name,Value=myvol},{Key=env,Value=testing}]
+
+# Attaching the EBS volume to the instance
+aws ec2 attach-volume --volume-id vol-0c6a735615d3ab418 --instance-id i-0a1439101877433db --device /dev/sdf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
