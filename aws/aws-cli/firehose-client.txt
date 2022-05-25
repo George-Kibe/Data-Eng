@@ -1,0 +1,130 @@
+import boto3
+firehose = boto3.client('firehose',aws_access_key_id=AWS_KEY_ID, aws_secret_access_key=AWS_SECRET, region_name="eu-west-1")
+
+#Show delivery streams
+response = firehorse.list_delivery_streams()
+print(response["DeliverySystemNames"])
+
+#Delete delivery streams
+for stream_name in response["DeliverySystemNames"]:
+    firehose.delete_delivery_stream(DeliveryStreamName=stream_name)
+
+#creating an s3 Bucket
+s3=boto3.client('s3', aws_access_key_id=AWS_KEY_ID, aws_secret_access_key=AWS_SECRET, region_name="eu-west-1")
+s3.create_bucket(Bucket="Bucket_Name")
+
+# Create the new sd-vehicle-data bucket
+s3.create_bucket(Bucket='sd-vehicle-data')
+
+# List the buckets in S3
+for bucket_info in s3.list_buckets()['Buckets']:
+    
+    # Get the bucket_name
+    bucket_name = bucket_info['Name']
+    
+    # Generate bucket ARN.
+    arn = "arn:aws:s3:::{}".format(bucket_name)
+    
+    # Print the ARN
+    print(arn)
+
+##Creating the stream
+res= firehose.create_delivery_stream(DeliveryStreamName="gps-delivery-stream"
+	DeliveryStreamType="DirectPut",
+	S3DestinationConfiguration ={
+		"RoleARN":"arn:aws:iam::0000000:role/FirehoseDeliveryRole",
+		"BucketARN":"arn:aws:s3:::sd-vehicle-data"
+	}
+)
+
+#create stream response
+print(res["DeliveryStreamARN"])
+
+
+#reading data into a dataframe
+obj_data = s3.get_object(Bucket="sd-vehicle-data", key=KEY)
+#read the object into a dataframe
+vehicle_data = pd.read_csv(
+	data['Body'],
+	delimeter="",
+	names=["", ]#list all column names
+	)
+# create_firehose.py: Create firehose stream. No need to edit.
+import _setup
+firehose, s3 = _setup.ex_vars
+
+# Create s3 bucket
+s3.create_bucket(Bucket='sd-vehicle-data')
+
+# Create Firehose delivery stream
+res = firehose.create_delivery_stream(
+    DeliveryStreamName="gps-delivery-stream",
+    DeliveryStreamType="DirectPut",
+    # Specify configuration of the destination S3 bucket
+    S3DestinationConfiguration = {
+        "BucketARN": "arn:aws:s3:::sd-vehicle-data",
+        "RoleARN": "arn:aws:iam::0000000:role/firehoseDeliveryRole"
+    })
+    
+# Print the stream ARN
+print("Created Firehose Stream ARN: {}".format(res['DeliveryStreamARN']))
+
+
+
+
+
+
+######
+# OBD2_sensors.py: Write to Firehose stream. EDIT HERE.
+import _setup, create_firehose
+firehose, s3, records = _setup.ex_vars
+for idx, row in records.iterrows(): 
+
+    # Create a payload string that ends with a newline
+    payload = ' '.join(str(value) for value in row) 
+    payload = payload + "\n"
+    print("Sending payload: {}".format(payload))
+
+    # Send the payload string to Firehose stream
+    res = firehose.put_record(
+        DeliveryStreamName = 'gps-delivery-stream',
+        Record = {'Data': payload})
+
+    # Print the written RecordId
+    print("Wrote to RecordId: {}".format(res['RecordId']))
+
+
+
+
+
+#########
+# analyze_data.py: Analyze written sensor data. EDIT HERE.
+import _setup, _run_deps, pandas as pd
+firehose, s3, records = _setup.ex_vars
+
+# List the objects that have been written to the S3 bucket
+objects = s3.list_objects(Bucket='sd-vehicle-data')['Contents']
+
+# Create list for collecting dataframes from read files.
+dfs = []
+
+# For every object, load it from S3
+for obj in objects:
+    data_file = s3.get_object(Bucket='sd-vehicle-data', Key=obj['Key'])
+
+    # Load it into a dataframe, specifying a delimiter and column names
+    dfs.append(pd.read_csv(data_file['Body'], 
+                           delimiter = " ", 
+                           names=["record_id", "timestamp", "vin", "lon", "lat", "speed"]))
+
+# Concatenate the resulting dataframes.
+data = pd.concat(dfs)
+print(data.groupby(['vin'])['speed'].max())
+
+
+
+
+
+
+
+

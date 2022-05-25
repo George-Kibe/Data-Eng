@@ -1,0 +1,7 @@
+# Creating an s3 Bucket
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyNewS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "georges-test-s3bucket-96496325"

@@ -1,0 +1,11 @@
+# Creating an EC2 Key Value Pair
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  MyPredictKeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: DEGEOWAM-keypair
+      KeyType: rsa
+      #PublicKeyMaterial: String
+      #Tags:
+      # - Tag

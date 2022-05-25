@@ -1,0 +1,24 @@
+# use to launch an Test AMI Instance
+AWSTemplateFormatVersion: 2010-09-09
+Description: "Creates an instance using the EXPLORE AMI"
+Parameters:
+  InstanceName:
+    Description: "This is Test Instance Launch using AMI"
+    Type: String
+  SprintName:
+    Description: "Storing Big Data"
+    Type: String
+
+Resources:
+  EC2Instance:
+  #Type: AWS::ProductIdentifier::ResourceType
+  Type: "AWS::EC2::Instance"
+  Properties:
+    ImageId: ami-0b23604f872b0abe6 #explore ami
+    InstanceType: t2.micro
+    SecurityGroupIds: ["sg-8de584dd"]
+    Tags:
+      - Key: Name
+        Value: !Ref InstanceName
+      - Key: Sprint
+        Value: !Ref SprintName

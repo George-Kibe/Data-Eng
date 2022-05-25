@@ -1,0 +1,21 @@
+#create stream
+aws kinesis create-stream --stream-name blazingfast --shard-count 1
+#Add tags to stream
+aws kinesis add-tags-to-stream --stream-name blazingfast --tags team=data_engineering
+#View stream properties
+aws kinesis describe-stream --stream-name blazingfast
+#Add Records to the stream
+aws kinesis put-record --stream-name blazingfast --data "{'location_id': '1', 'depth': '200', 'status': 'OK'}" --partition-key "1" --cli-binary-format raw-in-base64-out
+aws kinesis put-record --stream-name blazingfast --data "{'location_id': '2', 'depth': '245', 'status': 'OK'}" --partition-key "1" --cli-binary-format raw-in-base64-out
+aws kinesis put-record --stream-name blazingfast --data "{'location_id': '1', 'depth': '-200', 'status': 'FAIL'}" --partition-key "1" --cli-binary-format raw-in-base64-out
+
+#Retrieve the shard iterartor
+aws kinesis get-shard-iterator --stream-name blazingfast --shard-id shardId-000000000000 --shard-iterator-type TRIM_HORIZON
+#shard iteratpr is used to retrieve data
+#Retrieve Data using the Shard Iterator
+aws kinesis get-records --shard-iterator "AAAAAAAAAAF2UZ3UjDm8iAMusoCd4lZW9y/ZjgnYvVvsm1LN56xVEy+SRjenjHoomduQbJDsaPYDBiCxN9ddzIFPfeASo9z377MMP104EJjxjSIK5rUIXUPGrQT32wSgOnNggym0JPPGTv/sDOz9EdrO2Ix9BUoW8UPj1CHuNI3xHaW4nsWfs3bk2gARrKCTZWO34KpzJ8e9USDf7ysjoGQXlpBFoQZCbqmlE+Re+hOjfX1cNI4VBw=="
+
+#To decode the data
+Iterator=$(aws kinesis get-shard-iterator --stream-name blazingfast --shard-id shardId-000000000000 --shard-iterator-type TRIM_HORIZON | jq -r '.ShardIterator')
+
+aws kinesis get-records --shard-iterator $Iterator | jq -r '.Records[0].Data' | base64 --decode
