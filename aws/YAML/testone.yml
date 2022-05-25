@@ -1,0 +1,46 @@
+#comments in YAML
+#uses key value pairs separated by a : then a space
+# 2 spaces for identation
+contact_details:
+  cell: 1234666541
+  email: test@gmail.com
+  fax: 125632555
+  alternative_contact:
+    cell: 458612112
+    name: Test name
+#basic lists
+groceries: [milk, pie, juice]
+#Lists using "-"
+cars_in_garage:
+  - make: w #first element
+    model: golf
+    year: 1990
+  - make: Toyota #second element
+    model: Toyota Landcruiser
+    year: 2011
+weekend:
+  - Saturday
+  - Sunday
+#Multi line string
+quote: |
+  All of the text
+  here will be kept
+  in multiple lines
+#Single line strings
+quote1: >
+  Everything here 
+  will be returned
+  as a single line
+
+#referencing a value
+username: *name
+#referencing a key-value pair
+contact: 
+  <<: *contact_details
+#Type casting
+age: !!float 33 # will be rendered as 33.0
+height: !!str 1.75 # will be "1.75"
+#every infrastructure you create via cloud formation is called a stack
+#A stack is a collection of AWS resources that you can manage as a sinle unit
+#You can create, update or delete a collection of resources by creating, updating or deleting stacks
+#all the resources in a stack are defined using the Aws cloudformation template
