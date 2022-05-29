@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "Create EC2Instance adding key pair"
+Parameters:
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+Resources:
+  Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      SecurityGroups:
+        - MyExistingSecurityGroup # allow only 22/tcp inbound for 0.0.0.0/0
+      KeyName:
+        Ref: KeyName
+      ImageId: ami-6869aa05 # Amazon Linux AMI 2016.03 HVM SSD EBS
