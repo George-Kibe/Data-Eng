@@ -1,0 +1,124 @@
+# Creating a VPC in cloudformation
+AWSTemplateFormatVersion: 2010-09-09
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: Extract Predict Part 1 - File Server resource deployment
+        Parameters:
+          - EnvironmentName
+          - VpcCIDR
+          - DataCenterPublicSubnetCIDR
+Parameters:
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+    Default: DE-Extract
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 192.168.0.0/16
+  DataCenterPublicSubnetCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 192.168.10.0/24
+
+Resources:
+  DEGEOWAMVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn: DEGEOWAMVPC
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref DEGEOWAMVPC
+  DataCenterPublicSubnet:
+    Type: AWS::EC2::Subnet
+    DependsOn: DEGEOWAMVPC
+    Properties:
+      VpcId: !Ref DEGEOWAMVPC
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Ref DataCenterPublicSubnetCIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Data Center Public Subnet (AZ1)
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    DependsOn: DEGEOWAMVPC
+    Properties:
+      VpcId: !Ref DEGEOWAMVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Routes
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: [DEGEOWAMVPC, InternetGatewayAttachment]
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  DataCenterPublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: DEGEOWAMVPC
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref DataCenterPublicSubnet
+  WindowsInstanceSG:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: DEGEOWAMVPC
+    Properties:
+      GroupDescription: Security Group for permitting ssh access to the data center file server
+      GroupName: DE-Extract-WindowsInstanceSG
+      VpcId: !Ref DEGEOWAMVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-WindowsInstanceSG
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3389
+          ToPort: 3389
+          CidrIp: 0.0.0.0/0
+  FileServerSG:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: DEGEOWAMVPC
+    Properties:
+      GroupDescription: Security Group to permit all tcp traffic to and from the default ssh port 22
+      GroupName: DE-Extract-FileServerSG
+      VpcId: !Ref DEGEOWAMVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-FileServerSG
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 192.168.10.0/24
+  FileGatewaySG:
+    Type: AWS::EC2::SecurityGroup
+    DependsOn: DEGEOWAMVPC
+    Properties:
+      GroupDescription: Security Group controls the access to the file gateway instance
+      GroupName: DE-Extract-FileGatewaySG
+      VpcId: !Ref DEGEOWAMVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-FileGatewaySG
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 192.168.0.0/16
