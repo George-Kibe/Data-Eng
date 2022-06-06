@@ -4,7 +4,7 @@ Resources:
   MyPredictKeyPair:
     Type: AWS::EC2::KeyPair
     Properties:
-      KeyName: DEGEOWAM-keypair
+      KeyName: DEGEOWAM-keypairtwo
       KeyType: rsa
       #PublicKeyMaterial: String
       #Tags:
