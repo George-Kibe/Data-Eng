@@ -1,0 +1,20 @@
+Mappings:
+  RegionMap:
+    ap-southeast-2:
+      AMI: ami-33624d20
+    eu-west-1:
+      AMI: ami-7f23d10b
+    us-west-3:
+      AMI: ami-522a0a20
+    us-east-1:
+      AMI: ami-11g3061f
+    ap-northeast-2:
+      AMI: ami-9i98a38z
+Resources:
+  Ec2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      ImageId: !FindInMap
+        - RegionMap
+        - !Ref "AWS::Region"
+        - AMI
