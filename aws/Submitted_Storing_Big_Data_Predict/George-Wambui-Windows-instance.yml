@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: Windows Instance Template
+        Parameters:
+          - VPC
+          - Subnet
+          - KeyName
+          - SecurityGroupIds
+          - LatestWindowsAmiId
+#StackName: DEGEOWAM-Windows-Instance
+Parameters:
+  VPC:
+    Description: VPC to deploy resources into.
+    Type: "AWS::EC2::VPC::Id"
+  Subnet:
+    Description: Subnet to deploy resources into.
+    Type: "AWS::EC2::Subnet::Id"
+  SecurityGroupIds:
+    Description: Specify the security group/s for resources.
+    Type: "List<AWS::EC2::SecurityGroup::Id>"
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the file server.
+    Type: "AWS::EC2::KeyPair::KeyName"
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair.
+  LatestWindowsAmiId:
+    Description: |
+      Resource path representing the latest Windows Amazon Machine Image (AMI) 
+      This should not be changed
+    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+    Default: /aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base
+
+Resources:
+  WindowsInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: This is an IAM role that will be assigned to the Windows-based EC2 instance, allowing it to interact with other AWS services
+      RoleName: WindowsInstanceRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      # Policies:
+      #   - DeletionPolicy
+  WindowsInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: "/"
+      Roles:
+        - Ref: "WindowsInstanceRole"
+
+  WindowsInstanceRolePolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: Windows-client-DEGEOWAM-Windows-Instance
+      #Description: This policy enables read-only access to all S3 buckets within your account
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "s3:Get*"
+              - "s3:List*"
+            Resource: "*"
+      Roles:
+        - !Ref WindowsInstanceRole
+
+  WindowsInstance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      ImageId: !Ref LatestWindowsAmiId
+      KeyName: !Ref KeyName
+      #Description: The Windows EC2 instance which represents an on-premise corporate machine which has network access to the private file server (Linux instance)
+      InstanceType: t2.micro
+      IamInstanceProfile: !Ref WindowsInstanceProfile
+      SecurityGroupIds: !Ref SecurityGroupIds
+      SubnetId: !Ref Subnet
+      # UserData:
+      #   Fn::Base64:
+      #     Fn::Join:
+      #       - ""
+      #       - - "<script>\n"
+      #         - "cfn-init.exe -v -s "
+      Tags:
+        - Key: Name
+          Value: DE-Extract-Windows-Instance
+  # outputs:
+  #   WindowsInstance:
+  #     Description: Private IP address of the newly created File server EC2 instance
+  #     Value: !GetAtt
+  #       - WindowsInstance
+  #       - PrivateIp
