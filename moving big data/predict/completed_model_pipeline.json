@@ -1,0 +1,98 @@
+{
+    "objects": [
+      {
+        "scriptUri": "s3://de-mbd-predict-george-wambui-s3-source/Scripts/bash_script.sh",
+        "name": "SpunEc2InstanceActivity",
+        "runsOn": {
+          "ref": "ResourceId_qmtgf"
+        },
+        "id": "ShellCommandActivityId_t8Nry",
+        "type": "ShellCommandActivity"
+      },
+      {
+        "role": "DataPipelineDefaultRole",
+        "subject": "George_Wambui_Pipeline_Success",
+        "name": "Success Action",
+        "id": "ActionId_J85iy",
+        "message": "George_Wambui_Pipeline_Success\nHistorical Stocks data copied to RDS database successfully",
+        "type": "SnsAlarm",
+        "topicArn": "arn:aws:sns:eu-west-1:179792149144:de-mbd-predict-george-wambui-SNS"
+      },
+      {
+        "databaseName": "postgres",
+        "*password": "kibe1234",
+        "name": "Postgres Historical Stocks Database",
+        "id": "DatabaseId_F5mS2",
+        "type": "RdsDatabase",
+        "rdsInstanceId": "de-mbd-predict-db-instance",
+        "username": "postgres"
+      },
+      {
+        "failureAndRerunMode": "CASCADE",
+        "resourceRole": "DataPipelineDefaultResourceRole",
+        "role": "DataPipelineDefaultRole",
+        "pipelineLogUri": "s3://de-mbd-predict-george-wambui-s3-source/Logs/",
+        "scheduleType": "ONDEMAND",
+        "name": "Default",
+        "id": "Default"
+      },
+      {
+        "output": {
+          "ref": "DataNodeId_H0waQ"
+        },
+        "input": {
+          "ref": "DataNodeId_otrE5"
+        },
+        "dependsOn": {
+          "ref": "ShellCommandActivityId_t8Nry"
+        },
+        "onFail": {
+          "ref": "ActionId_0Xka0"
+        },
+        "name": "Copy Stock Data from S3 to Rds",
+        "runsOn": {
+          "ref": "ResourceId_qmtgf"
+        },
+        "id": "CopyActivityId_cvSwi",
+        "type": "CopyActivity",
+        "onSuccess": {
+          "ref": "ActionId_J85iy"
+        }
+      },
+      {
+        "filePath": "s3://de-mbd-predict-george-wambui-s3-source/Output/historical_stock_data.csv",
+        "name": "S3 Historical Data Source",
+        "id": "DataNodeId_otrE5",
+        "type": "S3DataNode"
+      },
+      {
+        "resourceRole": "DataPipelineDefaultResourceRole",
+        "role": "DataPipelineDefaultRole",
+        "imageId": "ami-03e42371d9913a8a9",
+        "name": "PipelineEc2Instance",
+        "id": "ResourceId_qmtgf",
+        "type": "Ec2Resource",
+        "terminateAfter": "1 Hour"
+      },
+      {
+        "role": "DataPipelineDefaultRole",
+        "subject": "George_Wambui_Pipeline_Failure",
+        "name": "Failure Action",
+        "id": "ActionId_0Xka0",
+        "message": "George_Wambui_Pipeline_Failure\nHistorical Stocks data not copied to RDS database.\nCheck for possible errors George!",
+        "type": "SnsAlarm",
+        "topicArn": "arn:aws:sns:eu-west-1:179792149144:de-mbd-predict-george-wambui-SNS"
+      },
+      {
+        "database": {
+          "ref": "DatabaseId_F5mS2"
+        },
+        "name": "Postgres RDS Historical Stock Database",
+        "insertQuery": "INSERT INTO public.historical_stocks_data VALUES (?,?,?,?,?,?,?,?,?)",
+        "id": "DataNodeId_H0waQ",
+        "type": "SqlDataNode",
+        "table": "historical_stocks_data"
+      }
+    ],
+    "parameters": []
+  }

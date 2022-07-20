@@ -1,0 +1,95 @@
+{
+  "objects": [
+    {
+      "output": {
+        "ref": "DataNodeId_tBpFv"
+      },
+      "input": {
+        "ref": "DataNodeId_A5CsR"
+      },
+      "dependsOn": {
+        "ref": "ShellCommandActivityId_3yQKz"
+      },
+      "onFail": {
+        "ref": "ActionId_Z8zZM"
+      },
+      "name": "CopyCsvToRds",
+      "runsOn": {
+        "ref": "ResourceId_y1H3T"
+      },
+      "id": "CopyActivityId_LWBJh",
+      "type": "CopyActivity",
+      "onSuccess": {
+        "ref": "ActionId_YfkZX"
+      }
+    },
+    {
+      "resourceRole": "DataPipelineDefaultResourceRole",
+      "role": "DataPipelineDefaultRole",
+      "name": "DataPipelineEc2Instance",
+      "id": "ResourceId_y1H3T",
+      "type": "Ec2Resource"
+    },
+    {
+      "database": {
+        "ref": "DatabaseId_xxzOD"
+      },
+      "name": "PostgresRDS",
+      "insertQuery": "INSERT INTO public.historical_stocks_data VALUES (?,?,?,?,?,?,?,?,?)",
+      "id": "DataNodeId_tBpFv",
+      "type": "SqlDataNode",
+      "table": "historical_stocks_data"
+    },
+    {
+      "role": "DataPipelineDefaultRole",
+      "subject": "George_Kibe_Pipeline_Failure",
+      "name": "ActionOnFailure",
+      "id": "ActionId_Z8zZM",
+      "message": "Data Pipeline Copying Failute",
+      "type": "SnsAlarm",
+      "topicArn": "arn:aws:sns:eu-west-1:179792149144:de-mbd-predict-george-wambui-SNS"
+    },
+    {
+      "role": "DataPipelineDefaultRole",
+      "subject": "George_Kibe_Pipeline_Success",
+      "name": "ActionOnSuccess",
+      "id": "ActionId_YfkZX",
+      "type": "SnsAlarm",
+      "message": "Data Pipeline Copying Done Successfully",
+      "topicArn": "arn:aws:sns:eu-west-1:179792149144:de-mbd-predict-george-wambui-SNS"
+    },
+    {
+      "*password": "kibe1234",
+      "name": "Stocks Data RDS",
+      "id": "DatabaseId_xxzOD",
+      "type": "RdsDatabase",
+      "rdsInstanceId": "de-mbd-predict-db-instance",
+      "username": "postgres"
+    },
+    {
+      "failureAndRerunMode": "CASCADE",
+      "resourceRole": "DataPipelineDefaultResourceRole",
+      "role": "DataPipelineDefaultRole",
+      "pipelineLogUri": "s3://de-mbd-predict-george-wambui-s3-source/Logs/",
+      "scheduleType": "ONDEMAND",
+      "name": "Default",
+      "id": "Default"
+    },
+    {
+      "scriptUri": "s3://de-mbd-predict-george-wambui-s3-source/Scripts/bash_script.sh",
+      "name": "SpunEc2InstanceActivity",
+      "id": "ShellCommandActivityId_3yQKz",
+      "runsOn": {
+        "ref": "ResourceId_y1H3T"
+      },
+      "type": "ShellCommandActivity"
+    },
+    {
+      "filePath": "s3://de-mbd-predict-george-wambui-s3-source/Output/historical_stock_data.csv",
+      "name": "S3SourceStockData",
+      "id": "DataNodeId_A5CsR",
+      "type": "S3DataNode"
+    }
+  ],
+  "parameters": []
+}

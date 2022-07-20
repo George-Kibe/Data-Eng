@@ -1,0 +1,48 @@
+{
+    "objects": [
+      {
+        "filePath": "s3://george-kibe-de-load-source/world-happiness-report-2021.csv",
+        "name": "s3-source",
+        "id": "DataNodeId_E0Lkt",
+        "type": "S3DataNode"
+      },
+      {
+        "resourceRole": "DataPipelineDefaultResourceRole",
+        "role": "DataPipelineDefaultRole",
+        "name": "CopyDataInstance",
+        "id": "ResourceId_MPmEM",
+        "type": "Ec2Resource",
+        "terminateAfter": "15 Minutes"
+      },
+      {
+        "output": {
+          "ref": "DataNodeId_p8Bf6"
+        },
+        "input": {
+          "ref": "DataNodeId_E0Lkt"
+        },
+        "name": "copy-mys3-data",
+        "id": "CopyActivityId_Owo9V",
+        "runsOn": {
+          "ref": "ResourceId_MPmEM"
+        },
+        "type": "CopyActivity"
+      },
+      {
+        "failureAndRerunMode": "CASCADE",
+        "resourceRole": "DataPipelineDefaultResourceRole",
+        "role": "DataPipelineDefaultRole",
+        "pipelineLogUri": "s3://george-kibe-de-load-source/Logs/",
+        "scheduleType": "ONDEMAND",
+        "name": "Default",
+        "id": "Default"
+      },
+      {
+        "filePath": "s3://george-kibe-de-load-sink/CopyDataOutput/world-happiness-report-2021.csv",
+        "name": "s3-sink",
+        "id": "DataNodeId_p8Bf6",
+        "type": "S3DataNode"
+      }
+    ],
+    "parameters": []
+  }

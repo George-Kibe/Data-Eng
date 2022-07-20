@@ -1,0 +1,2 @@
+Name,Surname,Source_bucket,Monitored_bucket,SNS_topic
+George,Wambui,de-mbd-predict-george-wambui-s3-source,de-mbd-predict-george-wambui-monitored-bucket,de-mbd-predict-george-wambui-SNS
