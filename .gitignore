@@ -2,3 +2,9 @@ csvSamples/
 *.zip
 .ipynb_checkpoints
 George-Wambui.csv
+Stocks/
+*.pyc
+bitcoin_train.csv
+spark_deeper_concepts_transformed_data.snappy.parquet
+historical_stock_data.csv
+stock_historical_data.db
