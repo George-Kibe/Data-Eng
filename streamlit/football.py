@@ -5,25 +5,23 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-st.title('NBA Player Stats Explorer')
+st.title('NFL Football Stats (Rushing) Explorer')
 
 st.markdown("""
-This app performs simple webscraping of NBA player stats data!
-* **Python libraries:** base64, pandas, streamlit
-* **Data source:** [Basketball-reference.com](https://www.basketball-reference.com/).
+This app performs simple webscraping of NFL Football player stats data (focusing on Rushing)!
+* **Python libraries:** base64, pandas, streamlit, numpy, matplotlib, seaborn
+* **Data source:** [pro-football-reference.com](https://www.pro-football-reference.com/).
 """)
 
 st.sidebar.header('User Input Features')
-selected_year = st.sidebar.selectbox('Year', list(reversed(range(1950,2024))))
+selected_year = st.sidebar.selectbox('Year', list(reversed(range(1990,2020))))
 
-# Web scraping of NBA player stats
-# @st.cache_data
-@st.cache_resource
+# Web scraping of NFL player stats
+# https://www.pro-football-reference.com/years/2019/rushing.htm
+@st.cache_data
 def load_data(year):
-    url = "https://www.basketball-reference.com/leagues/NBA_" + str(year) + "_per_game.html"
-    # pd.read_html() is a method in the pandas library for Python that is used to extract tables from HTML web pages 
-    # and return them as a list of pandas DataFrame objects.
-    html = pd.read_html(url, header = 0)
+    url = "https://www.pro-football-reference.com/years/" + str(year) + "/rushing.htm"
+    html = pd.read_html(url, header = 1)
     df = html[0]
     raw = df.drop(df[df.Age == 'Age'].index) # Deletes repeating headers in content
     raw = raw.fillna(0)
@@ -36,7 +34,7 @@ sorted_unique_team = sorted(playerstats.Tm.unique())
 selected_team = st.sidebar.multiselect('Team', sorted_unique_team, sorted_unique_team)
 
 # Sidebar - Position selection
-unique_pos = ['C','PF','SF','PG','SG']
+unique_pos = ['RB','QB','WR','FB','TE']
 selected_pos = st.sidebar.multiselect('Position', unique_pos, unique_pos)
 
 # Filtering data
